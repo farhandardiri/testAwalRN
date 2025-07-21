@@ -1,19 +1,22 @@
-import { StyleSheet, View, Text } from "react-native";
+// app/index.jsx
+import { useEffect } from "react";
+import { useRouter } from "expo-router";
+import { View, ActivityIndicator } from "react-native";
 
-const Home = () => {
+export default function RedirectToLogin() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      router.replace("/login");
+    }, 100); // beri jeda agar layout siap
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Home</Text>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" />
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, // penting agar halaman memenuhi layar
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
-
-export default Home;
+}
