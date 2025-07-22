@@ -1,22 +1,26 @@
-// app/index.jsx
-import { useEffect } from "react";
-import { useRouter } from "expo-router";
-import { View, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import BottomMenu from "./components/BottomMenu";
 
-export default function RedirectToLogin() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      router.replace("/login");
-    }, 100); // beri jeda agar layout siap
-
-    return () => clearTimeout(timeout);
-  }, []);
-
+export default function Home() {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <ActivityIndicator size="large" />
+    <View style={styles.container}>
+      <Text style={styles.title}>Selamat Datang di Aplikasi Persuratan</Text>
+      <BottomMenu />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fefefe",
+    paddingTop: 80,
+    paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 40,
+  },
+});

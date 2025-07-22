@@ -15,6 +15,8 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants"; // Tambahkan ini
 
 export const options = { headerShown: false };
 
@@ -24,22 +26,57 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const date = new Date();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       Alert.alert("Error", "Username dan password harus diisi.");
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (username === "farhan" && password === "1234") {
-        router.replace("/");
-      } else {
-        Alert.alert("Login gagal", "Username atau password salah.");
+
+    try {
+      const LOCAL_IP = "172.16.43.131"; // Ganti dengan IP komputer Andazr
+      const response = await fetch(
+        `http://${LOCAL_IP}:3000/api/v2/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        }
+      );
+
+      // Perbaikan 2: Handle response error dengan lebih baik
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `Login gagal (Status: ${response.status})`
+        );
       }
-    }, 1500); // simulasi loading
+
+      const data = await response.json();
+
+      // Perbaikan 3: Validasi token sebelum menyimpan
+      if (!data.token) {
+        throw new Error("Token tidak ditemukan dalam respons server");
+      }
+
+      // Simpan token JWT
+      await AsyncStorage.setItem("userToken", data?.token);
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect ke halaman utama
+      router.replace("/");
+    } catch (err) {
+      // Perbaikan 4: Error handling yang lebih informatif
+      Alert.alert(
+        "Login Gagal",
+        err.message || "Terjadi kesalahan saat menghubungi server"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,6 +107,7 @@ export default function Login() {
           autoCapitalize="none"
           value={username}
           onChangeText={setUsername}
+          editable={!loading}
         />
 
         <View style={styles.passwordContainer}>
@@ -80,11 +118,13 @@ export default function Login() {
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
+            editable={!loading}
           />
           <TouchableOpacity
             onPress={() => setShowPassword(!showPassword)}
             style={styles.eyeIcon}
-            hitSlop={10}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            disabled={loading}
           >
             <Ionicons
               name={showPassword ? "eye-off" : "eye"}
@@ -103,7 +143,7 @@ export default function Login() {
             colors={["#003c39", "#b5b57f"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.button}
+            style={[styles.button, loading && styles.disabledButton]}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -112,6 +152,13 @@ export default function Login() {
             )}
           </LinearGradient>
         </TouchableOpacity>
+
+        <View style={styles.footer}>
+          <Text style={styles.appSubTitle}>
+            Aplikasi Persuratan Pondok Pesantren Nurul Jadid
+          </Text>
+          <Text style={styles.appSubTitle1}>2025 - {date.getFullYear()}</Text>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -120,17 +167,24 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: "#fff",
+    // backgroundColor: "#fff", // Pastikan ada background color
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 32,
-    paddingBottom: 0, // <= ubah ini
+    paddingBottom: 20, // Beri ruang di bawah
   },
   header: {
     alignItems: "center",
     marginBottom: 28,
+  },
+  footer: {
+    alignItems: "center",
+    position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
   },
   image: {
     width: 100,
@@ -144,6 +198,12 @@ const styles = StyleSheet.create({
   },
   appSubTitle: {
     fontSize: 14,
+    fontWeight: "400",
+    color: "#757571",
+  },
+  appSubTitle1: {
+    marginTop: 5,
+    fontSize: 12,
     fontWeight: "400",
     color: "#757571",
   },
@@ -171,6 +231,7 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     fontSize: 14,
+    paddingVertical: 10, // Tambahkan padding vertikal
   },
   eyeIcon: {
     paddingLeft: 10,
@@ -184,6 +245,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: "center",
     alignItems: "center",
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   buttonText: {
     color: "#fff",
