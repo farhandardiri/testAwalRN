@@ -1,22 +1,12 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Install: expo install @expo/vector-icons
 import { useRouter } from "expo-router";
-import BottomMenu from "../components/BottomMenu";
-// import { Colors } from "../../constants/Colors";
+import BottomMenu from "./components/BottomMenu";
 
-export default function suratMasuk() {
+export default function Barcode() {
   const router = useRouter();
-  // const colorScheme = useColorScheme();
-  // const theme = Colors[colorScheme] ?? Colors.light;
 
   return (
-    // <View style={[styles.container, { backgroundColor: theme.background }]}>
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
@@ -25,13 +15,13 @@ export default function suratMasuk() {
         >
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Surat Masuk</Text>
+        <Text style={styles.headerTitle}>Barcode</Text>
         <View style={styles.rightPlaceholder}></View>
       </View>
 
       {/* Konten */}
       <View style={styles.content}>
-        <Text>Konten surat masuk...</Text>
+        <Text>Barcode</Text>
       </View>
 
       <BottomMenu />
